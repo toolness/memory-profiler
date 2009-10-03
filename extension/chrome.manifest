@@ -1,0 +1,2 @@
+content memprof content/
+overlay chrome://browser/content/browser.xul chrome://memprof/content/browser.xul

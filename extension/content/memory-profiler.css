@@ -1,0 +1,108 @@
+body {
+    color: white;
+    background: black;
+}
+
+#container {
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+    width: 50em;
+    margin: 0 auto;
+}
+
+#content {
+    font-size: 10pt;
+    font-family: Palatino, Georgia, serif;
+}
+
+a {
+    color: white;
+}
+
+button {
+    color: white;
+    background: black;
+    border: 1px dotted gray;
+    font-family: Palatino, Georgia, serif;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #111111;
+}
+
+button:focus {
+    border: 1px dotted white;
+}
+
+#output {
+    color: gray;
+}
+
+p {
+    color: gray;
+}
+
+h1, h2 {
+    font-weight: normal;
+}
+
+textarea {
+    background: black;
+    color: white;
+    border: 1pt dotted gray;
+    padding: 1em;
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+}
+
+textarea:focus {
+    border: 1px dotted white;
+}
+
+pre {
+    padding-left: 1em;
+    padding-right: 1em;
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+}
+
+table, td, th {
+    width: 100%;
+    border: 0;
+}
+
+td, th {
+    padding: 0.5em;
+}
+
+tr:nth-child(even) {
+    background-color: #111111;
+}
+
+th {
+    border-bottom: 1px dotted gray;
+    font-weight: normal;
+}
+
+td {
+    padding: 0.5em;
+    vertical-align: top;
+}
+
+.object-name {
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+}
+
+.clickable {
+    cursor: pointer;    
+}
+
+.clickable:hover {
+    text-decoration: underline;
+}
+
+.report {
+    display: none;
+}
