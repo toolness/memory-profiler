@@ -12,5 +12,9 @@ To install, uninstall, and create an XPI for the extension, run:
 
   python manage.py
 
+More information on this project can be found here:
+
+  https://wiki.mozilla.org/Labs/Memory_Profiler
+
 - Atul Varma
   Oct 3 2009
