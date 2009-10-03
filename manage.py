@@ -274,8 +274,9 @@ def xpi(options):
     platforms = os.listdir(os.path.join(options.path_to_ext_root, "lib"))
     platforms.append("all")
 
+    name = options.ext_name.lower().replace(" ", "_")
     for platform in platforms:
-        zfname = "%s-%s-%s.xpi" % (options.ext_name.lower(),
+        zfname = "%s-%s-%s.xpi" % (name,
                                    options.ext_version,
                                    platform)
         zf = zipfile.ZipFile(zfname, "w", zipfile.ZIP_DEFLATED)
