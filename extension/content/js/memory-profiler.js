@@ -22,11 +22,17 @@ function log(message, isInstant) {
     elem.slideDown();
 }
 
-function addTableEntries(table, infos, addRow) {
+function addTableEntries(table, infos, buildRow) {
+  function addRow(info) {
+    var row = $("<tr></tr>");
+    buildRow(info, row);
+    $(table).append(row);
+  }
+
   infos.slice(0, ENTRIES_TO_SHOW).forEach(addRow);
 
   if (infos.length > ENTRIES_TO_SHOW) {
-    var more = $('<button>more...</button>');
+    var more = $('<button>more\u2026</button>');
     function showMore() {
       more.remove();
       infos.slice(ENTRIES_TO_SHOW).forEach(addRow);
@@ -52,8 +58,7 @@ function analyzeResult(result) {
       return a.count - b.count;
     });
 
-    function addObjInfoRow(info) {
-      var row = $("<tr></tr>");
+    function buildObjInfoRow(info, row) {
       var name = $("<td></td>");
       if (info.name.length > MAX_SHAPE_NAME_LEN)
         info.name = info.name.slice(0, MAX_SHAPE_NAME_LEN) + "\u2026";
@@ -69,18 +74,16 @@ function analyzeResult(result) {
       var count = $("<td></td>");
       count.text(info.count);
       row.append(count);
-      $("#objtable").append(row);
     }
 
-    addTableEntries($("#objtable"), objInfos, addObjInfoRow);
+    addTableEntries($("#objtable"), objInfos, buildObjInfoRow);
 
     var funcInfos = [info for each (info in data.functions)];
     funcInfos.sort(function(b, a) {
       return a.rating - b.rating;
     });
 
-    function addFuncInfoRow(info) {
-      var row = $("<tr></tr>");
+    function buildFuncInfoRow(info, row) {
       var name = $("<td></td>");
       name.text(info.name + "()");
       name.addClass("object-name");
@@ -105,11 +108,9 @@ function analyzeResult(result) {
       addCell(info.referents);
       addCell(info.isGlobal);
       addCell(info.protoCount);
-
-      $("#functable").append(row);
     }
 
-    addTableEntries($("#functable"), funcInfos, addFuncInfoRow);
+    addTableEntries($("#functable"), funcInfos, buildFuncInfoRow);
 
     //log("Raw window data: " + JSON.stringify(data.windows));
     if (data.rejectedTypes.length) {
