@@ -60,6 +60,21 @@ function analyzeResult(result) {
   worker.onmessage = function(event) {
     var data = JSON.parse(event.data);
 
+    var winInfos = [info for each (info in data.windows)];
+    winInfos.sort(function(b, a) {
+      return a.referents - b.referents;
+    });
+
+    var windowNum = 1;
+
+    function buildWinInfoRow(info, name, references, referents) {
+      name.text(windowNum++);
+      references.text(info.references);
+      referents.text(info.referents);
+    }
+
+    addTableEntries($("#wintable"), winInfos, buildWinInfoRow);
+
     var ncInfos = [{name: name, instances: data.nativeClasses[name]}
                    for (name in data.nativeClasses)];
     ncInfos.sort(function(b, a) { return a.instances - b.instances; });

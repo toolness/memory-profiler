@@ -81,8 +81,9 @@ function analyzeResult(result) {
     return info.protoCount;
   }
 
-  function makeWindowInfo(info) {
-    return {references: info.children.length,
+  function makeWindowInfo(id, info) {
+    return {id: id,
+            references: info.children.length,
             referents: info.referents.length};
   }
 
@@ -126,7 +127,7 @@ function analyzeResult(result) {
   var windows = {};
   for (name in data.namedObjects) {
     var id = data.namedObjects[name];
-    windows[id] = makeWindowInfo(graph[id]);
+    windows[id] = makeWindowInfo(id, graph[id]);
   }
 
   return JSON.stringify({functions: functions,
