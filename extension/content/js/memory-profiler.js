@@ -23,9 +23,17 @@ function log(message, isInstant) {
 }
 
 function addTableEntries(table, infos, buildRow) {
+  var cellsPerRow = $(table).find("th").length;
+
   function addRow(info) {
     var row = $("<tr></tr>");
-    buildRow(info, row);
+    var args = [info];
+    for (var i = 0; i < cellsPerRow; i++) {
+      var cell = $("<td></td>");
+      args.push(cell);
+      row.append(cell);
+    }
+    buildRow.apply(row, args);
     $(table).append(row);
   }
 
@@ -58,8 +66,7 @@ function analyzeResult(result) {
       return a.count - b.count;
     });
 
-    function buildObjInfoRow(info, row) {
-      var name = $("<td></td>");
+    function buildObjInfoRow(info, name, count) {
       if (info.name.length > MAX_SHAPE_NAME_LEN)
         info.name = info.name.slice(0, MAX_SHAPE_NAME_LEN) + "\u2026";
       info.name = info.name.replace(/,/g, "/");
@@ -70,10 +77,8 @@ function analyzeResult(result) {
           info.name = info.name.slice(0, info.name.length-1);
       name.text(info.name);
       name.addClass("object-name");
-      row.append(name);
-      var count = $("<td></td>");
+
       count.text(info.count);
-      row.append(count);
     }
 
     addTableEntries($("#objtable"), objInfos, buildObjInfoRow);
@@ -83,8 +88,8 @@ function analyzeResult(result) {
       return a.rating - b.rating;
     });
 
-    function buildFuncInfoRow(info, row) {
-      var name = $("<td></td>");
+    function buildFuncInfoRow(info, name, instances, referents, isGlobal,
+                              protoCount) {
       name.text(info.name + "()");
       name.addClass("object-name");
       name.addClass("clickable");
@@ -97,17 +102,11 @@ function analyzeResult(result) {
             this.info.filename, null, null, this.info.lineStart
           );
         });
-      row.append(name);
 
-      function addCell(content) {
-        var cell = $("<td></td>");
-        row.append(cell.text(content));
-      }
-
-      addCell(info.instances);
-      addCell(info.referents);
-      addCell(info.isGlobal);
-      addCell(info.protoCount);
+      instances.text(info.instances);
+      referents.text(info.referents);
+      isGlobal.text(info.isGlobal);
+      protoCount.text(info.protoCount);
     }
 
     addTableEntries($("#functable"), funcInfos, buildFuncInfoRow);
