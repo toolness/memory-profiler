@@ -55,93 +55,90 @@ function addTableEntries(table, infos, buildRow) {
 var MAX_SHAPE_NAME_LEN = 80;
 var ENTRIES_TO_SHOW = 10;
 
+function showReports(data) {
+  var reports = $("#reports");
+
+  reports = reports.clone();
+  $(".report", reports).hide();
+  reports.show();
+  $("#output").append(reports);
+
+  var winInfos = [info for each (info in data.windows)];
+  winInfos.sort(function(b, a) { return a.referents - b.referents; });
+
+  var windowNum = 1;
+  function buildWinInfoRow(info, name, references, referents) {
+    name.text(windowNum++);
+    references.text(info.references);
+    referents.text(info.referents);
+  }
+
+  addTableEntries($("#wintable", reports), winInfos, buildWinInfoRow);
+
+  var ncInfos = [{name: name, instances: data.nativeClasses[name]}
+                 for (name in data.nativeClasses)];
+  ncInfos.sort(function(b, a) { return a.instances - b.instances; });
+
+  function buildNcInfoRow(info, name, instances) {
+    name.text(info.name);
+    instances.text(info.instances);
+  }
+
+  addTableEntries($("#nctable", reports), ncInfos, buildNcInfoRow);
+
+  var objInfos = [{name: name, count: data.shapes[name]}
+                  for (name in data.shapes)];
+  objInfos.sort(function(b, a) { return a.count - b.count; });
+
+  function buildObjInfoRow(info, name, count) {
+    if (info.name.length > MAX_SHAPE_NAME_LEN)
+      info.name = info.name.slice(0, MAX_SHAPE_NAME_LEN) + "\u2026";
+    info.name = info.name.replace(/,/g, "/");
+    if (!info.name)
+      info.name = "(no properties)";
+    else
+      if (info.name.charAt(info.name.length-1) == "/")
+        info.name = info.name.slice(0, info.name.length-1);
+    name.text(info.name);
+    name.addClass("object-name");
+
+    count.text(info.count);
+  }
+
+  addTableEntries($("#objtable", reports), objInfos, buildObjInfoRow);
+
+  var funcInfos = [info for each (info in data.functions)];
+  funcInfos.sort(function(b, a) { return a.rating - b.rating; });
+
+  function buildFuncInfoRow(info, name, instances, referents, isGlobal,
+                            protoCount) {
+    name.text(info.name + "()");
+    name.addClass("object-name");
+    name.addClass("clickable");
+    name.get(0).info = info;
+    name.click(
+      function() {
+        window.openDialog(
+          "chrome://global/content/viewSource.xul",
+          "_blank", "all,dialog=no",
+          this.info.filename, null, null, this.info.lineStart
+        );
+      });
+
+    instances.text(info.instances);
+    referents.text(info.referents);
+    isGlobal.text(info.isGlobal);
+    protoCount.text(info.protoCount);
+  }
+
+  addTableEntries($("#functable", reports), funcInfos, buildFuncInfoRow);
+}
+
 function analyzeResult(result) {
   var worker = new Worker('js/memory-profiler.worker.js');
   worker.onmessage = function(event) {
-    var data = JSON.parse(event.data);
-
-    var winInfos = [info for each (info in data.windows)];
-    winInfos.sort(function(b, a) {
-      return a.referents - b.referents;
-    });
-
-    var windowNum = 1;
-
-    function buildWinInfoRow(info, name, references, referents) {
-      name.text(windowNum++);
-      references.text(info.references);
-      referents.text(info.referents);
-    }
-
-    addTableEntries($("#wintable"), winInfos, buildWinInfoRow);
-
-    var ncInfos = [{name: name, instances: data.nativeClasses[name]}
-                   for (name in data.nativeClasses)];
-    ncInfos.sort(function(b, a) { return a.instances - b.instances; });
-
-    function buildNcInfoRow(info, name, instances) {
-      name.text(info.name);
-      instances.text(info.instances);
-    }
-
-    addTableEntries($("#nctable"), ncInfos, buildNcInfoRow);
-
-    var objInfos = [{name: name, count: data.shapes[name]}
-                    for (name in data.shapes)];
-    objInfos.sort(function(b, a) {
-      return a.count - b.count;
-    });
-
-    function buildObjInfoRow(info, name, count) {
-      if (info.name.length > MAX_SHAPE_NAME_LEN)
-        info.name = info.name.slice(0, MAX_SHAPE_NAME_LEN) + "\u2026";
-      info.name = info.name.replace(/,/g, "/");
-      if (!info.name)
-        info.name = "(no properties)";
-      else
-        if (info.name.charAt(info.name.length-1) == "/")
-          info.name = info.name.slice(0, info.name.length-1);
-      name.text(info.name);
-      name.addClass("object-name");
-
-      count.text(info.count);
-    }
-
-    addTableEntries($("#objtable"), objInfos, buildObjInfoRow);
-
-    var funcInfos = [info for each (info in data.functions)];
-    funcInfos.sort(function(b, a) {
-      return a.rating - b.rating;
-    });
-
-    function buildFuncInfoRow(info, name, instances, referents, isGlobal,
-                              protoCount) {
-      name.text(info.name + "()");
-      name.addClass("object-name");
-      name.addClass("clickable");
-      name.get(0).info = info;
-      name.click(
-        function() {
-          window.openDialog(
-            "chrome://global/content/viewSource.xul",
-            "_blank", "all,dialog=no",
-            this.info.filename, null, null, this.info.lineStart
-          );
-        });
-
-      instances.text(info.instances);
-      referents.text(info.referents);
-      isGlobal.text(info.isGlobal);
-      protoCount.text(info.protoCount);
-    }
-
-    addTableEntries($("#functable"), funcInfos, buildFuncInfoRow);
-
-    //log("Raw window data: " + JSON.stringify(data.windows));
-    if (data.rejectedTypes.length) {
-      //log("Rejected types: " + data.rejectedTypes.join(", "));
-    }
-    log("Done. To profile again, please reload this page.");
+    log("Done.");
+    showReports(JSON.parse(event.data));
   };
   worker.onerror = function(error) {
     log("An error occurred: " + error.message);
@@ -220,7 +217,7 @@ function doProfiling(browserInfo) {
 function makeProfilerFor(browserInfo) {
   return function() {
     Components.utils.forceGC();
-    $("#form").remove();
+    $("#output").empty();
     log("Profiling \u201c" + browserInfo.name + "\u201d. Please wait.", true);
     window.setTimeout(function() { doProfiling(browserInfo); }, 0);
   };

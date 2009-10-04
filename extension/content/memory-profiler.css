@@ -35,10 +35,6 @@ button:focus {
     border: 1px dotted white;
 }
 
-#output {
-    color: gray;
-}
-
 p {
     color: gray;
 }
@@ -103,6 +99,6 @@ td {
     text-decoration: underline;
 }
 
-.report {
+#reports {
     display: none;
 }
