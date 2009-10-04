@@ -55,6 +55,25 @@ function addTableEntries(table, infos, buildRow) {
 var MAX_SHAPE_NAME_LEN = 80;
 var ENTRIES_TO_SHOW = 10;
 
+function makeViewSourceCallback(filename, lineNo) {
+  return function viewSource() {
+    window.openDialog("chrome://global/content/viewSource.xul",
+                      "_blank", "all,dialog=no",
+                      filename, null, null, lineNo);
+  };
+}
+
+function makeShapeName(name) {
+  if (name.length > MAX_SHAPE_NAME_LEN)
+    name = name.slice(0, MAX_SHAPE_NAME_LEN) + "\u2026";
+  name = name.replace(/,/g, "/");
+  if (name && name.charAt(name.length-1) == "/")
+    name = name.slice(0, name.length-1);
+  if (!name)
+    name = "(no properties)";
+  return name;
+}
+
 function showReports(data) {
   var reports = $("#reports");
 
@@ -91,15 +110,7 @@ function showReports(data) {
   objInfos.sort(function(b, a) { return a.count - b.count; });
 
   function buildObjInfoRow(info, name, count) {
-    if (info.name.length > MAX_SHAPE_NAME_LEN)
-      info.name = info.name.slice(0, MAX_SHAPE_NAME_LEN) + "\u2026";
-    info.name = info.name.replace(/,/g, "/");
-    if (!info.name)
-      info.name = "(no properties)";
-    else
-      if (info.name.charAt(info.name.length-1) == "/")
-        info.name = info.name.slice(0, info.name.length-1);
-    name.text(info.name);
+    name.text(makeShapeName(info.name));
     name.addClass("object-name");
 
     count.text(info.count);
@@ -115,16 +126,7 @@ function showReports(data) {
     name.text(info.name + "()");
     name.addClass("object-name");
     name.addClass("clickable");
-    name.get(0).info = info;
-    name.click(
-      function() {
-        window.openDialog(
-          "chrome://global/content/viewSource.xul",
-          "_blank", "all,dialog=no",
-          this.info.filename, null, null, this.info.lineStart
-        );
-      });
-
+    name.click(makeViewSourceCallback(info.filename, info.lineStart));
     instances.text(info.instances);
     referents.text(info.referents);
     isGlobal.text(info.isGlobal);
