@@ -26,8 +26,17 @@ function analyzeResult(result) {
     graph[id].referents = [];
   var functions = {};
   var graphFuncs = [];
+  var nativeClasses = {};
   for (id in graph) {
     var info = graph[id];
+
+    var nativeClass = info.nativeClass;
+    if (nativeClass.indexOf("XPC") == 0)
+      nativeClass = "XPConnect Object Wrapper";
+    if (!(nativeClass in nativeClasses))
+      nativeClasses[nativeClass] = 1;
+    else
+      nativeClasses[nativeClass]++;
 
     // Add function info.
     if (info.filename) {
@@ -121,6 +130,7 @@ function analyzeResult(result) {
   }
 
   return JSON.stringify({functions: functions,
+                         nativeClasses: nativeClasses,
                          windows: windows,
                          rejectedTypes: data.rejectedTypes,
                          shapes: shapes});

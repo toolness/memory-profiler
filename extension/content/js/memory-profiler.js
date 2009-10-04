@@ -60,6 +60,17 @@ function analyzeResult(result) {
   worker.onmessage = function(event) {
     var data = JSON.parse(event.data);
 
+    var ncInfos = [{name: name, instances: data.nativeClasses[name]}
+                   for (name in data.nativeClasses)];
+    ncInfos.sort(function(b, a) { return a.instances - b.instances; });
+
+    function buildNcInfoRow(info, name, instances) {
+      name.text(info.name);
+      instances.text(info.instances);
+    }
+
+    addTableEntries($("#nctable"), ncInfos, buildNcInfoRow);
+
     var objInfos = [{name: name, count: data.shapes[name]}
                     for (name in data.shapes)];
     objInfos.sort(function(b, a) {
