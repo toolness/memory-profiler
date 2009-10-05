@@ -102,3 +102,15 @@ td {
 #reports {
     display: none;
 }
+
+#snapshots {
+    display: none;
+}
+
+.selected {
+    color: white;
+}
+
+#snapshot-list {
+    color: gray;
+}

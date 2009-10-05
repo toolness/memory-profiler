@@ -2,6 +2,8 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
+var gSnapshots = [];
+
 function getBinaryComponent() {
   try {
     var factory = Cc["@labs.mozilla.com/jetpackdi;1"]
@@ -22,7 +24,7 @@ function log(message, isInstant) {
     elem.slideDown();
 }
 
-function addTableEntries(table, infos, buildRow) {
+function addTableEntries(table, infos, buildRow, onDone) {
   var cellsPerRow = $(table).find("th").length;
 
   function addRow(info) {
@@ -49,7 +51,7 @@ function addTableEntries(table, infos, buildRow) {
   }
 
   $(table).after(more);
-  $(table).parent().fadeIn();
+  $(table).parent().fadeIn(onDone);
 }
 
 var MAX_SHAPE_NAME_LEN = 80;
@@ -74,7 +76,7 @@ function makeShapeName(name) {
   return name;
 }
 
-function showReports(data) {
+function showReports(data, onDone) {
   var reports = $("#reports");
 
   reports = reports.clone();
@@ -133,14 +135,48 @@ function showReports(data) {
     protoCount.text(info.protoCount);
   }
 
-  addTableEntries($("#functable", reports), funcInfos, buildFuncInfoRow);
+  addTableEntries($("#functable", reports), funcInfos, buildFuncInfoRow,
+                  onDone);
 }
 
-function analyzeResult(result) {
+function updateSnapshots(data, startTime, name, onDone) {
+  var entry = $("<li></li>");
+  entry.addClass("clickable");
+  entry.addClass("selected");
+  var time = (startTime.getHours() + ":" +
+              startTime.getMinutes() + ":" +
+              startTime.getSeconds());
+  entry.text("Snapshot of \u201c" + name + "\u201d at " + time);
+  entry.click(
+    function() {
+      $("#snapshot-list .selected").removeClass("selected");
+      $(this).addClass("selected");
+      $("#output").empty();
+      showReports(data);
+    });
+
+  if (gSnapshots.length > 0)
+    entry.hide();
+
+  $("#snapshot-list .selected").removeClass("selected");
+  $("#snapshot-list").append(entry);
+
+  if (gSnapshots.length > 0)
+    entry.fadeIn(onDone);
+  else
+    $("#snapshots").fadeIn(onDone);
+
+  gSnapshots.push({startTime: startTime,
+                   data: data});
+}
+
+function analyzeResult(result, startTime, name) {
   var worker = new Worker('js/memory-profiler.worker.js');
   worker.onmessage = function(event) {
-    log("Done.");
-    showReports(JSON.parse(event.data));
+    //log("Done.");
+    var data = JSON.parse(event.data);
+    updateSnapshots(data, startTime, name,
+                    function() { showReports(data); });
   };
   worker.onerror = function(error) {
     log("An error occurred: " + error.message);
@@ -190,7 +226,7 @@ function doProfiling(browserInfo) {
   windowsToProfile = [browser.contentWindow.wrappedJSObject];
   windowsToProfile = windowsToProfile.concat(iframes);
 
-  var start = new Date();
+  var startTime = new Date();
   var binary = getBinaryComponent();
   if (!binary) {
     log("Required binary component not found! One may not be available " +
@@ -199,15 +235,16 @@ function doProfiling(browserInfo) {
   }
   var result = binary.profileMemory(code, filename, 1,
                                     windowsToProfile);
-  var totalTime = (new Date()) - start;
+  var totalTime = (new Date()) - startTime;
   //log(totalTime + " ms were spent in memory profiling.");
 
   result = JSON.parse(result);
   if (result.success) {
-    log("Analyzing profiling data now, please wait.");
+    //log("Analyzing profiling data now, please wait.");
     //log("named objects: " + JSON.stringify(result.data.namedObjects));
     window.setTimeout(function() {
-      analyzeResult(JSON.stringify(result.data));
+      analyzeResult(JSON.stringify(result.data), startTime,
+                    browserInfo.name);
     }, 0);
   } else {
     log("An error occurred while profiling.");
@@ -220,7 +257,8 @@ function makeProfilerFor(browserInfo) {
   return function() {
     Components.utils.forceGC();
     $("#output").empty();
-    log("Profiling \u201c" + browserInfo.name + "\u201d. Please wait.", true);
+    //log("Profiling \u201c" + browserInfo.name + "\u201d. Please wait.",
+    //    true);
     window.setTimeout(function() { doProfiling(browserInfo); }, 0);
   };
 }
