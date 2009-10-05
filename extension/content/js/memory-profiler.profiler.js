@@ -40,9 +40,10 @@ function doProfiling() {
       (nativeClass.indexOf('HTML') == 0) ||
         (nativeClass.indexOf('DOM') == 0) ||
         (nativeClass.indexOf('XPC_WN_') == 0)) {
-      var info = getObjectInfo(parseInt(id));
-      if ((info.parent in windows) || (info.id in windows))
-        graph[id] = info;
+      var intId = parseInt(id);
+      var parent = getObjectParent(intId);
+      if ((parent in windows) || (intId in windows))
+        graph[id] = getObjectInfo(intId);
     } else {
       if (!(nativeClass in rejectedTypes))
         rejectedTypes[nativeClass] = true;
