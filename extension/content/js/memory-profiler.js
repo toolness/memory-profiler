@@ -143,9 +143,7 @@ function updateSnapshots(data, startTime, name, onDone) {
   var entry = $("<li></li>");
   entry.addClass("clickable");
   entry.addClass("selected");
-  var time = (startTime.getHours() + ":" +
-              startTime.getMinutes() + ":" +
-              startTime.getSeconds());
+  var time = startTime.toTimeString().slice(0, 8);
   entry.text("Snapshot of \u201c" + name + "\u201d at " + time);
   entry.click(
     function() {
