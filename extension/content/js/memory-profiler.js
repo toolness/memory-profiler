@@ -236,8 +236,15 @@ function doProfiling(browserInfo) {
              "available for your OS and Firefox version.");
     return;
   }
-  var result = binary.profileMemory(code, filename, 1,
-                                    windowsToProfile);
+
+  try {
+    var result = binary.profileMemory(code, filename, 1,
+                                      windowsToProfile);
+  } catch (e) {
+    logError("An error occurred: " + e);
+    return;
+  }
+
   var totalTime = (new Date()) - startTime;
   //log(totalTime + " ms were spent in memory profiling.");
 
