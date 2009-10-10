@@ -114,3 +114,10 @@ td {
 #snapshot-list {
     color: gray;
 }
+
+.error {
+    white-space: pre;
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+    color: red;
+}

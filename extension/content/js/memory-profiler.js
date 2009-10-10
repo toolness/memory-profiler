@@ -14,14 +14,19 @@ function getBinaryComponent() {
   }
 }
 
-function log(message, isInstant) {
-  var elem = $("<p></p>");
+function log(message, isInstant, elem) {
+  if (!elem)
+    elem = $("<p></p>");
   if (!isInstant)
     elem.hide();
   elem.text(message);
   $("#output").append(elem);
   if (!isInstant)
     elem.slideDown();
+}
+
+function logError(message) {
+  log(message, false, $('<div class="error"></div>'));
 }
 
 function addTableEntries(table, infos, buildRow, onDone) {
@@ -177,7 +182,7 @@ function analyzeResult(result, startTime, name) {
                     function() { showReports(data); });
   };
   worker.onerror = function(error) {
-    log("An error occurred: " + error.message);
+    logError("An error occurred: " + error.message);
   };
   worker.postMessage(result);
 }
@@ -227,8 +232,8 @@ function doProfiling(browserInfo) {
   var startTime = new Date();
   var binary = getBinaryComponent();
   if (!binary) {
-    log("Required binary component not found! One may not be available " +
-        "for your OS and Firefox version.");
+    logError("Required binary component not found! One may not be " +
+             "available for your OS and Firefox version.");
     return;
   }
   var result = binary.profileMemory(code, filename, 1,
@@ -245,9 +250,9 @@ function doProfiling(browserInfo) {
                     browserInfo.name);
     }, 0);
   } else {
-    log("An error occurred while profiling.");
-    log(result.traceback);
-    log(result.error);
+    logError("An error occurred while profiling.");
+    logError(result.traceback);
+    logError(result.error);
   }
 }
 
