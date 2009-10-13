@@ -237,6 +237,11 @@ function doProfiling(browserInfo) {
     return;
   }
 
+  if (binary.collectCycles)
+    binary.collectCycles();
+  else
+    Cu.forceGC();
+
   try {
     var result = binary.profileMemory(code, filename, 1,
                                       windowsToProfile);
@@ -265,7 +270,6 @@ function doProfiling(browserInfo) {
 
 function makeProfilerFor(browserInfo) {
   return function() {
-    Components.utils.forceGC();
     $("#output").empty();
     //log("Profiling \u201c" + browserInfo.name + "\u201d. Please wait.",
     //    true);
